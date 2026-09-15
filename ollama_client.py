@@ -9,12 +9,14 @@ DAILY_PROMPT_TEMPLATE = """You write a daily progress update. Use PLAIN TEXT ONL
 (no markdown bold, no asterisks, no headers) in exactly this format:
 
 MERGED
-<one line per merged issue/MR: "[TYPE] - short description">
+<one line per merged issue/MR: "#IID [TYPE] - short description">
 
 IN PROGRESS
-<one line per in-progress issue: "[TYPE] - short description">
+<one line per in-progress issue: "#IID [TYPE] - short description">
 
 Rules:
+- Every line MUST start with the issue number exactly as given in the raw data (e.g. "#2207"),
+  never omit it and never invent one.
 - TYPE is the class label if present (e.g. BE, DB, Design), else omit it.
 - Keep each line to the issue title as given, do not invent details.
 - If a section is empty, write "None".
@@ -35,8 +37,8 @@ SPRINT STATUS: {status_emoji}
 
 PROGRESS
 
-{merged_count} issues merged into main
-{in_progress_count} in progress
+{merged_count} issues merged into main ({merged_refs})
+{in_progress_count} in progress ({in_progress_refs})
 
 TEAM SENTIMENT
 
@@ -46,7 +48,11 @@ BLOCKERS
 
 {blockers}
 
-Only output the text in that exact structure, nothing else.
+Rules:
+- The issue number lists in parentheses after each PROGRESS line must be copied exactly as given
+  below (e.g. "#2207, #1606") — never invent, reorder meaning, or drop any of them. If a list is
+  empty, write "none" in the parentheses instead.
+- Only output the text in that exact structure, nothing else.
 
 The team's own daily updates, for context on what actually moved:
 {daily_updates}
@@ -235,7 +241,7 @@ class OllamaClient:
         return self.generate(prompt)
 
     def build_cpo_update(self, merged_count, in_progress_count, sentiment_notes, blockers_notes,
-                         status_emoji, daily_updates=""):
+                         status_emoji, daily_updates="", merged_refs=None, in_progress_refs=None):
         sentiment_summary = sentiment_notes.strip() if sentiment_notes else \
             "There are more issues than we think we can finish in the sprint, monitoring as days go by."
         blockers = blockers_notes.strip() if blockers_notes else "N/A"
@@ -243,6 +249,8 @@ class OllamaClient:
             status_emoji=status_emoji,
             merged_count=merged_count,
             in_progress_count=in_progress_count,
+            merged_refs=", ".join(merged_refs) if merged_refs else "none",
+            in_progress_refs=", ".join(in_progress_refs) if in_progress_refs else "none",
             sentiment_summary=sentiment_summary,
             blockers=blockers,
             daily_updates=daily_updates.strip() or "(none)",

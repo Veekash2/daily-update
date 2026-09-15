@@ -1,4 +1,4 @@
-"""Onplia Progress & CPO Update Builder.
+"""Let Me Make Your Life Easier.
 
 A simple always-available desktop GUI:
 - First run: enter your own GitLab token/URL/project, pick team members, point at your sentiment file.
@@ -389,7 +389,7 @@ class SettingsDialog(tk.Toplevel):
 class MainApp(tk.Tk):
     def __init__(self):
         super().__init__()
-        self.title(">> ONPLIA_PROGRESS.EXE — SPRINT UPLINK")
+        self.title(">> LMMYLE.EXE — LET ME MAKE YOUR LIFE EASIER v2.2 EXTENDED")
         self.geometry("900x700")
         theme.apply(self)
         set_icon(self)
@@ -563,6 +563,8 @@ class MainApp(tk.Tk):
             debug_lines = []
             total_merged = 0
             total_in_progress = 0
+            all_merged_refs = []
+            all_in_progress_refs = []
             sentiment_notes = []
             daily_results = {}
 
@@ -580,6 +582,8 @@ class MainApp(tk.Tk):
 
                 merged_lines = [f'#{m["iid"]} {m["title"]}' for m in merged]
                 progress_lines = [f'#{i["iid"]} {i["title"]}' for i in in_progress]
+                all_merged_refs.extend(f'#{m["iid"]}' for m in merged)
+                all_in_progress_refs.extend(f'#{i["iid"]}' for i in in_progress)
 
                 debug_lines.append(f"--- {username} ---")
                 debug_lines.append(f"Merged ({len(merged)}): " + "; ".join(merged_lines) if merged_lines else f"Merged (0): none")
@@ -607,6 +611,8 @@ class MainApp(tk.Tk):
                 status_emoji=status_emoji,
                 daily_updates="\n\n".join(
                     f"{name}:\n{text}" for name, text in daily_results.items()),
+                merged_refs=sorted(set(all_merged_refs), key=lambda r: int(r.lstrip("#"))),
+                in_progress_refs=sorted(set(all_in_progress_refs), key=lambda r: int(r.lstrip("#"))),
             )
             advance()
 

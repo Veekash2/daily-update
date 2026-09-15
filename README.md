@@ -1,4 +1,4 @@
-# Onplia Progress & CPO Update Builder
+# Let Me Make Your Life Easier v2.2 Extended
 
 Desktop app (Tkinter) that pulls today's merged/in-progress GitLab issues per team member,
 reads a local sentiment file, and uses a local Ollama model to draft:
